@@ -104,7 +104,7 @@ function fname() { find . -iname "*$@*"; }
 
 conf() {
 	case $1 in
-		xmonad)		vim ~/.xmonad/xmonad.hs ;;
+		xmonad)		vim ~/.config/dotfiles/xmonad.hs ;;
 		conky)		vim ~/.xmonad/statusbar_conkyrc ;;
 		mpd)		vim ~/.mpdconf ;;
 		compton)	vim ~/.config/compton.conf ;;
