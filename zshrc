@@ -80,7 +80,7 @@ setopt hist_ignore_all_dups
 setopt no_clobber
 setopt nohup
 COMPLETION_WAITING_DOTS="true"
-export HISTFILE="${HOME}"/.zsh-history
+export HISTFILE="${HOME}"/.zsh_history
 export HISTSIZE=2000
 export SAVEHIST=$HISTSIZE
 # When offering typo corrections, do not propose anything which starts with an
@@ -140,14 +140,12 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias ......='cd ../../../../..'
-alias ll='ls -AlF'
-alias la='ls -A'
-alias lla='ls -lA'
-alias l='ls -CF'
 alias vi='vim'
 
 # enable color support of ls and also add handy aliases
-alias ls='ls --color=auto'
+alias ls='ls --color=auto --group-directories-first -hXF'
+alias la='ls --color=auto --group-directories-first -AhXF'
+alias ll='ls --color=auto --group-directories-first -lhXF'
 alias dir='dir --color=auto'
 alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'

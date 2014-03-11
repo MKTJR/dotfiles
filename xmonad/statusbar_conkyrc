@@ -1,4 +1,4 @@
-# conkrc to be piped into bar-aint-recursive called by conky spawned by xmonad
+# conkrc to be piped into bar-aint-recursive
 short_units yes
 background yes
 out_to_console yes
