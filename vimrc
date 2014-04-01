@@ -8,6 +8,8 @@
 " Personal additions
 "
 
+" Write files with privileges
+cnoremap sudow w !sudo tee % >/dev/null
 " Highlight unwanted whitespace
 :highlight ExtraWhitespace ctermbg=darkblue guibg=darkblue
 " Show trailing whitespace:
@@ -20,7 +22,7 @@
 " Show line numbers
 set number
 set relativenumber
-highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
+"highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
 
 " Latex suite
 set grepprg=grep\ -nH\ $*
@@ -105,7 +107,7 @@ set mat=2
 syntax enable
 
 colorscheme desert
-set background=dark
+set background=light
 
 " Set utf8 as standard encoding and en_US as the standard language
 set encoding=utf8

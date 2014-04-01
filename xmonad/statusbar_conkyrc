@@ -9,5 +9,5 @@ update_interval_on_battery 30
 
 TEXT
 \l ${if_mpd_playing}${mpd_status}: ${mpd_artist} - ${mpd_title}${else}${exec ddate}$endif\
-\c${if_up wlp3s0}\f2${execi 60 /home/tlw/scripts/bar_wlan.sh}\fr$endif\
+\c $mem \
 \r ${battery BAT0}     ${time %I:%M} \

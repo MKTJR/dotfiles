@@ -1,6 +1,9 @@
 ---------------------------------------
 -- XMonad configuration
 ---------------------------------------
+-- Options
+{-# LANGUAGE DeriveDataTypeable, NoMonomorphismRestriction, MultiParamTypeClasses, ImplicitParams #-}
+
 import XMonad
 import Data.Monoid
 import System.Exit
@@ -20,6 +23,7 @@ import XMonad.Layout.Circle
 import XMonad.Layout.Spiral
 
 import XMonad.Actions.CycleWS
+import XMonad.Actions.GridSelect
 
 import XMonad.ManageHook
 import XMonad.Hooks.ManageHelpers
@@ -66,7 +70,7 @@ main = do
 -- General settings and variables
 ---------------------------------------
 -- The preferred terminal program
-myTerminal		= "urxvtc"
+myTerminal		= "termite"
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
 myFocusFollowsMouse 	= False
@@ -84,7 +88,7 @@ myModMask       	= mod4Mask
 --myFont          = "-*-terminus-*-*-*-*-12-*-*-*-*-*-*-*"
 myFont          = "-*-nu.de-*-*-*-*-11-*-*-*-*-*-*-*"
 
-background	= "#050307"
+background	= "#0D0B0D"
 foreground	= "#F4F3F5"
 cursorColor	= "#F3DCC6"
 color0		= "#1E2F41"
@@ -106,6 +110,7 @@ color15		= "#F3DCC6"
 ---------------------------------------
 -- Prompt config
 ---------------------------------------
+myXPConfig :: XPConfig
 myXPConfig = defaultXPConfig
     { font		= myFont
     , bgColor		= background
@@ -115,9 +120,38 @@ myXPConfig = defaultXPConfig
     , borderColor	= foreground
     , promptBorderWidth	= 0
     , position 		= Top
-    , height		= 14
+    , height		= 15
     , defaultText	= []
     }
+---------------------------------------
+-- Gridselect config
+---------------------------------------
+-- GridSelect color scheme
+myColorizer :: Window -> Bool -> X (String, String)
+myColorizer = colorRangeFromClassName
+    (0x00,0x00,0x00) --lowest inactive bg
+    (0x1C,0x1C,0x1C) --highest inactive bg
+    (0x44,0xAA,0xCC) --active bg
+    (0xBB,0xBB,0xBB) --inactive fg
+    (0x00,0x00,0x00) --active fg
+
+-- GridSelect theme
+myGSConfig :: t -> GSConfig Window
+myGSConfig colorizer = (buildDefaultGSConfig myColorizer)
+    { gs_cellheight  = 24
+    , gs_cellwidth   = 200
+    , gs_cellpadding = 10
+    , gs_font        = myFont
+    }
+
+spawnGSConfig :: HasColorizer a => GSConfig a
+spawnGSConfig = defaultGSConfig
+    { gs_cellheight = 24
+    , gs_cellwidth = 140
+    , gs_cellpadding = 10
+    , gs_font = myFont
+    }
+
 ---------------------------------------
 -- Key bindings
 ---------------------------------------
@@ -125,16 +159,19 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Spawn a terminal
     [ ((modm .|. shiftMask	, xK_Return), spawn $ XMonad.terminal conf)
     -- Spawn stuff
-    , ((modm			, xK_i     ), spawn "urxvtc -title irssi -name irssi -e irssi" )
-    , ((modm			, xK_a     ), spawn "urxvtc -title alsamixer -name alsamixer -e alsamixer" )
-    , ((modm			, xK_m     ), spawn "urxvtc -title ncmpcpp -name ncmpcpp -e ncmpcpp" )
+    , ((modm			, xK_i     ), spawn "termite --title=irssi --exec=irssi" )
+    , ((modm			, xK_a     ), spawn "termite --title=alsamixer --exec=alsamixer" )
+    , ((modm			, xK_m     ), spawn "termite --title=ncmpcpp --exec=ncmpcpp" )
     -- Spawn keybindings
     , ((modm			, xK_d     ), spawn "dwb")
-    , ((modm			, xK_e     ), spawn "urxvtc -title ranger -name ranger -e ranger" )
+    , ((modm			, xK_e     ), spawn "termite --title=ranger --exec=ranger" )
     -- Prompts
     , ((modm			, xK_o     ), shellPrompt myXPConfig )
     , ((modm			, xK_p     ), manPrompt myXPConfig )
     , ((modm			, xK_w     ), spawn "uri=$(/home/tlw/scripts/surfraw-dmenu.sh) && dwb $uri" )
+    -- gridSelect
+    , ((modm            , xK_s     ), goToSelected $ myGSConfig myColorizer )
+    , ((modm .|. shiftMask , xK_s  ), spawnSelected spawnGSConfig ["~/diablo/rund2a.sh","~/diablo/rund2b.sh","~/diablo/rund2c.sh","~/diablo/rund2d.sh","~/diablo/rund2e.sh"] )
     -- Desktop notifications
     , ((modm			, xK_c     ), spawn "/home/tlw/scripts/notify_cal.sh" )
     , ((modm .|. shiftMask	, xK_o     ), spawn "/home/tlw/scripts/notify_cow.sh" )
@@ -183,12 +220,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm			, xK_comma ), sendMessage (IncMasterN 1))
     -- Deincrement the number of windows in the master area
     , ((modm			, xK_period), sendMessage (IncMasterN (-1)))
-    {-
-    -- Toggle the status bar gap
-    -- Use this binding with avoidStruts from Hooks.ManageDocks.
-    -- See also the statusBar function from Hooks.DynamicLog.
-    -- , ((modm              , xK_b     ), sendMessage ToggleStruts)
-    -}
     -- Quit xmonad
     , ((modm .|. shiftMask	, xK_q     ), io (exitWith ExitSuccess))
     -- Restart xmonad
@@ -198,7 +229,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- mod-[1..9], Switch to workspace N
     -- mod-shift-[1..9], Move client to workspace N
     [((m .|. modm, k), windows $ f i)
-        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
+        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_6]
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     {-
     ++
@@ -213,12 +244,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 -- Workspaces
 ---------------------------------------
 -- Workspace definitions
-myWorkspaces		= ["1","2","3","4","5","6","7","8","9"]
+myWorkspaces		= ["i","ii","iii","iv","v","vi"]
 -- Declare workspace rules
-myLayout = onWorkspace ( myWorkspaces !! 0 ) ( avoidStruts ( tiled ||| Circle ) ||| fullScreen )
-         $ avoidStruts ( tiled ||| spiraled ||| Circle ) ||| fullScreen
+myLayout = onWorkspace ( myWorkspaces !! 0 ) ( avoidStruts tiled ||| fullScreen )
+         $ avoidStruts ( tiled ||| spiraled ) ||| fullScreen
     where
-        tiled		= spacing 16 $ ResizableTall nmaster delta ratio []
+        tiled		= spacing 10 $ ResizableTall nmaster delta ratio []
         fullScreen	= noBorders ( fullscreenFull Full )
         spiraled	= spiral (ratio)
         -- Default number of windows in master pane
@@ -243,6 +274,7 @@ myLayout = onWorkspace ( myWorkspaces !! 0 ) ( avoidStruts ( tiled ||| Circle ) 
 -- 'className' and 'resource' are used below.
 myManageHook = composeAll . concat $
     [ [ resource 	=? "irssi"		--> doShift ( myWorkspaces !! 1 ) ]
+    , [ resource    =? "weechat"    --> doShift ( myWorkspaces !! 1 ) ]
     , [ resource	=? "ncmpcpp"		--> doShift ( myWorkspaces !! 3 ) ]
     , [ resource	=? "alsamixer"		--> doShift ( myWorkspaces !! 3 ) ]
     , [ className 	=? c			--> doCenterFloat | c <- floats ]
@@ -259,15 +291,15 @@ myXmonadBar	= "/usr/bin/bar -p"
 myBottomBar	= "conky -c /home/tlw/.xmonad/statusbar_conkyrc | /usr/bin/bar -bp"
 -- log rules
 myLogHook h = dynamicLogWithPP ( defaultPP
-    { ppCurrent		= wrap "\\b4" "\\br" . pad
+    { ppCurrent		= wrap "\\b0\\u8" "\\br\\ur" . pad
     --, ppVisible		= wrap "\\f3" "\\fr" . pad
-    , ppHidden		= pad
+    , ppHidden		= wrap "\\b0" "\\br" . pad
     , ppHiddenNoWindows	= wrap "\\f0" "\\fr" . pad
     , ppUrgent		= wrap "\\f1" "\\fr" . pad
     , ppWsSep		= ""
-    , ppSep		= "\\c"
+    , ppSep		    = "\\c"
     , ppLayout		= wrap "\\r\\f4" "\\fr" . pad
-    , ppTitle		= wrap "\\l" "" . shorten 90 . pad
-    , ppOrder		= \(ws:t:l:_) -> [t,ws, l]
+    , ppTitle		= wrap "\\l\\b8\\f0\\u8 > \\br\\fr" "\\ur" . shorten 90 . pad
+    , ppOrder		= \(ws:t:l:_) -> [t,ws,l]
     , ppOutput		= hPutStrLn h
     } )
